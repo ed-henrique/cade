@@ -35,4 +35,4 @@ CHAVE_API_CORREIOS= # Insira sua chave da API dos Correios aqui
 npm run dev
 ```
 
-6. Acesse [aqui][http://localhost:5173]
+6. Acesse [aqui](http://localhost:5173)
