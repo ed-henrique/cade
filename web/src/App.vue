@@ -44,7 +44,8 @@ const buscaObjetos: Ref<string[]> = ref([])
 const objetoSelecionado: Ref<Objeto | undefined> = ref(undefined)
 const objetos: Ref<Objeto[]> = ref([])
 
-watch(buscaObjetos, async () => {
+watch(buscaObjetos, async (novoBuscaObjetos) => {
+  console.log(apiCorreios)
   const objetosBuscadosPromessa = await fetch(apiCorreios, {
     method: 'POST',
     headers: {
@@ -52,7 +53,7 @@ watch(buscaObjetos, async () => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      objetos: buscaObjetos,
+      objetos: novoBuscaObjetos,
     }),
   })
 

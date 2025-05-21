@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	urlBase                 = "https://cade.ed-henrique.com"
 	apiCorreiosAutenticacao = "https://api.correios.com.br/token/v1/autentica"
 	apiCorreiosRastreamento = "https://apps3.correios.com.br/areletronico/v1/ars/eventos"
 )
@@ -140,6 +141,11 @@ func main() {
 		}
 
 		w.Header().Add("content-type", "application/json")
+		w.Header().Add("access-control-allow-origin", urlBase)
+		w.Header().Add("access-control-allow-methods", "GET, OPTIONS")
+		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
+		w.Header().Add("vary", "Origin")
+
 		if _, err := io.Copy(w, &buffer); err != nil {
 			handleErr(w, "could not send full response", http.StatusBadRequest, err)
 			return
