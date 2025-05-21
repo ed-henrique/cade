@@ -112,7 +112,7 @@ func createAndExecuteRequest(endpoint string, w http.ResponseWriter, r io.Reader
 func main() {
 	var acessoAtual acesso
 
-	http.HandleFunc("GET /api/rastreamento", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("POST /api/rastreamento", func(w http.ResponseWriter, r *http.Request) {
 		objetosRastreamento := struct {
 			Objetos []string `json:"objetos"`
 		}{}
@@ -142,7 +142,7 @@ func main() {
 
 		w.Header().Add("content-type", "application/json")
 		w.Header().Add("access-control-allow-origin", urlBase)
-		w.Header().Add("access-control-allow-methods", "GET, OPTIONS")
+		w.Header().Add("access-control-allow-methods", "POST, OPTIONS")
 		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
 		w.Header().Add("vary", "Origin")
 
