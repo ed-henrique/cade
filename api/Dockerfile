@@ -6,7 +6,7 @@ COPY go.mod .
 RUN go mod download
 
 COPY . .
-RUN go build main.go -o main
+RUN go build -o main main.go
 
 FROM alpine:3.21 AS runner
 
