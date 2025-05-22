@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -112,6 +113,12 @@ func createAndExecuteRequest(endpoint string, w http.ResponseWriter, r io.Reader
 func main() {
 	var acessoAtual acesso
 
+	http.HandleFunc("OPTIONS /api/rastreamento", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("access-control-allow-origin", urlBase)
+		w.Header().Add("access-control-allow-methods", strings.Join([]string{http.MethodPost, http.MethodOptions}, ", "))
+		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
+	})
+
 	http.HandleFunc("POST /api/rastreamento", func(w http.ResponseWriter, r *http.Request) {
 		objetosRastreamento := struct {
 			Objetos []string `json:"objetos"`
@@ -142,7 +149,7 @@ func main() {
 
 		w.Header().Add("content-type", "application/json")
 		w.Header().Add("access-control-allow-origin", urlBase)
-		w.Header().Add("access-control-allow-methods", "POST, OPTIONS")
+		w.Header().Add("access-control-allow-methods", strings.Join([]string{http.MethodPost, http.MethodOptions}, ", "))
 		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
 		w.Header().Add("vary", "Origin")
 
