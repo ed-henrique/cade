@@ -26,6 +26,8 @@ var (
 	credenciais     = base64.StdEncoding.EncodeToString([]byte(usuarioCorreios + ":" + senhaCorreios))
 )
 
+type TimeWithoutTimezone time.Time
+
 type evento struct {
 	TipoEvento              string `json:"tipoEvento"`
 	StatusEvento            string `json:"statusEvento"`
@@ -75,8 +77,28 @@ type objeto struct {
 }
 
 type acesso struct {
-	Token    string    `json:"token"`
-	ExpiraEm time.Time `json:"expiraEm"`
+	Token    string              `json:"token"`
+	ExpiraEm TimeWithoutTimezone `json:"expiraEm"`
+}
+
+func (t *TimeWithoutTimezone) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	tt, err := time.Parse("2006-01-02T15:04:05", s)
+	if err != nil {
+		return err
+	}
+
+	*t = TimeWithoutTimezone(tt)
+	return nil
+}
+
+func (t TimeWithoutTimezone) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Time(t))
+}
+
+func (t TimeWithoutTimezone) Format(s string) string {
+	tt := time.Time(t)
+	return tt.Format(s)
 }
 
 func handleErr(w http.ResponseWriter, msg string, code int, err error) {

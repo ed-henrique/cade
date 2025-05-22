@@ -75,10 +75,11 @@ watch(buscaObjetos, async (novoBuscaObjetos) => {
 
     const objetosBuscados: Objeto[] = await res.json()
     objetos.value = objetosBuscados
-    erroRequisicao = false
+    erroRequisicao.value = false
   } catch (err) {
-    console.error(err)
     erroRequisicao.value = true
+    objetos.value = []
+    console.log(err)
   }
 })
 
