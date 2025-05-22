@@ -50,7 +50,9 @@ const apiCorreios = import.meta.env.VITE_API_URL
 
 const mode = useColorMode()
 
+const mensagemErro = ref('')
 const erroRequisicao = ref(false)
+
 const buscaObjetos: Ref<string[]> = ref([])
 const objetoSelecionado: Ref<Objeto | undefined> = ref(undefined)
 const objetos: Ref<Objeto[]> = ref([])
@@ -76,10 +78,17 @@ watch(buscaObjetos, async (novoBuscaObjetos) => {
     const objetosBuscados: Objeto[] = await res.json()
     objetos.value = objetosBuscados
     erroRequisicao.value = false
+    mensagemErro.value = ''
   } catch (err) {
+    if (err instanceof Error) {
+      mensagemErro.value = err.message
+    } else {
+      mensagemErro.value =
+        'O código de rastreamento está errado ou houve um erro no servidor. Tente novamente.'
+    }
+
     erroRequisicao.value = true
     objetos.value = []
-    console.log(err)
   }
 })
 
@@ -204,10 +213,7 @@ watch(objetos, async (novosObjetos) => {
           >
             <AlertCircle class="w-4 h-4" />
             <AlertTitle>Erro</AlertTitle>
-            <AlertDescription
-              >O código de rastreamento está errado ou houve um erro no servidor. Tente
-              novamente.</AlertDescription
-            >
+            <AlertDescription>{{ mensagemErro }}</AlertDescription>
           </Alert>
         </li>
         <li v-else-if="!objetoSelecionado" class="text-foreground text-center text-sm mt-8">
