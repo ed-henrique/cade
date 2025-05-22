@@ -2,7 +2,7 @@
 import { useColorMode } from '@vueuse/core'
 import { ref, watch } from 'vue'
 import type { Ref } from 'vue'
-import { Box, Check, Moon, Search, Sun } from 'lucide-vue-next'
+import { AlertCircle, Box, Check, CircleHelp, Moon, Search, Sun } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -27,7 +27,6 @@ import {
   TagsInputItemDelete,
   TagsInputItemText,
 } from '@/components/ui/tags-input'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Stepper,
   StepperDescription,
@@ -36,29 +35,49 @@ import {
   StepperTrigger,
   StepperTitle,
 } from '@/components/ui/stepper'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const apiCorreios = import.meta.env.VITE_API_URL
 
 const mode = useColorMode()
+
+const erroRequisicao = ref(false)
 const buscaObjetos: Ref<string[]> = ref([])
 const objetoSelecionado: Ref<Objeto | undefined> = ref(undefined)
 const objetos: Ref<Objeto[]> = ref([])
 
 watch(buscaObjetos, async (novoBuscaObjetos) => {
-  console.log(apiCorreios)
-  const objetosBuscadosPromessa = await fetch(apiCorreios, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      objetos: novoBuscaObjetos,
-    }),
-  })
+  try {
+    const res = await fetch(apiCorreios, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        objetos: novoBuscaObjetos,
+      }),
+    })
 
-  const objetosBuscados: Objeto[] = await objetosBuscadosPromessa.json()
-  objetos.value = objetosBuscados
+    if (!res.ok) {
+      const mensagemErro: string = await res.json()
+      throw new Error(mensagemErro)
+    }
+
+    const objetosBuscados: Objeto[] = await res.json()
+    objetos.value = objetosBuscados
+  } catch (err) {
+    console.error(err)
+  }
 })
 
 watch(objetos, async (novosObjetos) => {
@@ -72,6 +91,56 @@ watch(objetos, async (novosObjetos) => {
   <div class="flex flex-col items-center mt-8">
     <header class="relative mb-8 w-120">
       <Box class="block mt-0 mx-auto size-[125px] text-muted-foreground" />
+
+      <Dialog>
+        <DialogTrigger>
+          <Button
+            variant="ghost"
+            class="absolute top-0 left-0 text-muted-foreground dark:text-white"
+          >
+            <CircleHelp class="size-5" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ajuda</DialogTitle>
+            <DialogDescription>
+              Digite os códigos os separando por espaço, ponto, vírgula ou ponto e vírgula. Também
+              funciona apertando TAB entre os códigos ou colando uma lista de códigos na busca.
+            </DialogDescription>
+            <DialogDescription class="mt-2">
+              <h4 class="font-bold text-foreground mb-2">Exemplos:</h4>
+              <ul>
+                <li>
+                  - PJ819093885MH<span class="bg-foreground">&nbsp;</span>KX204993277DJ<span
+                    class="bg-foreground"
+                    >&nbsp;</span
+                  >EE235679625UQ
+                </li>
+                <li>
+                  - PJ819093885MH<b class="text-foreground">,</b>KX204993277DJ<b
+                    class="text-foreground"
+                    >,</b
+                  >EE235679625UQ
+                </li>
+                <li>
+                  - PJ819093885MH<b class="text-foreground">.</b>KX204993277DJ<b
+                    class="text-foreground"
+                    >.</b
+                  >EE235679625UQ
+                </li>
+                <li>
+                  - PJ819093885MH<b class="text-foreground">;</b>KX204993277DJ<b
+                    class="text-foreground"
+                    >;</b
+                  >EE235679625UQ
+                </li>
+              </ul>
+            </DialogDescription>
+            <DialogClose />
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
       <Button
         variant="ghost"
         @click="mode === 'dark' ? (mode = 'light') : (mode = 'dark')"
@@ -109,7 +178,6 @@ watch(objetos, async (novosObjetos) => {
             <Search class="size-5 text-muted-foreground dark:text-white" />
           </span>
         </div>
-        <Button type="submit">Buscar</Button>
       </div>
 
       <Select v-model="objetoSelecionado">
@@ -126,44 +194,21 @@ watch(objetos, async (novosObjetos) => {
       </Select>
 
       <ul class="flex flex-col gap-2">
-        <li v-if="!objetoSelecionado">
-          <Card>
-            <CardHeader>
-              <CardTitle><Skeleton class="h-4 w-28" /></CardTitle>
-              <CardDescription><Skeleton class="h-5 w-20" /></CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Stepper
-                orientation="vertical"
-                class="mx-auto flex w-full flex-col justify-start gap-10"
-              >
-                <StepperItem class="relative flex w-full items-start gap-6" :step="1">
-                  <StepperTrigger as-child>
-                    <Skeleton class="size-9 z-10 rounded-full shrink-0" />
-                  </StepperTrigger>
-
-                  <div class="flex flex-col gap-1 w-full">
-                    <div class="flex items-center justify-between">
-                      <StepperTitle>
-                        <Skeleton class="h-5 lg:h-6 w-10" />
-                      </StepperTitle>
-                      <span>
-                        <Skeleton class="h-5 w-30" />
-                      </span>
-                    </div>
-                    <StepperDescription>
-                      <Skeleton class="h-4 lg:h-5 w-40" />
-                    </StepperDescription>
-                  </div>
-                </StepperItem>
-              </Stepper>
-            </CardContent>
-            <CardFooter>
-              <div class="h-4 lg:h-5 w-full">
-                <Skeleton class="float-right h-full w-16" />
-              </div>
-            </CardFooter>
-          </Card>
+        <li v-if="erroRequisicao">
+          <Alert
+            variant="destructive"
+            class="border-red-400 text-justify wrap-break-word hyphens-auto"
+          >
+            <AlertCircle class="w-4 h-4" />
+            <AlertTitle>Erro</AlertTitle>
+            <AlertDescription
+              >O código de rastreamento está errado ou houve um erro no servidor. Tente
+              novamente.</AlertDescription
+            >
+          </Alert>
+        </li>
+        <li v-else-if="!objetoSelecionado" class="text-foreground text-center text-sm mt-8">
+          Digite algum código de rastreamento.
         </li>
         <li v-else>
           <Card>
