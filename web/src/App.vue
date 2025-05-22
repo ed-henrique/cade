@@ -104,8 +104,8 @@ watch(objetos, async (novosObjetos) => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center mt-8">
-    <header class="relative mb-8 w-120">
+  <div class="flex flex-col items-center mt-8 px-4 min-w-screen">
+    <header class="relative mb-8 w-full">
       <Box class="block mt-0 mx-auto size-[125px] text-muted-foreground" />
 
       <Dialog>
@@ -167,7 +167,7 @@ watch(objetos, async (novosObjetos) => {
       </Button>
     </header>
 
-    <main class="flex flex-col gap-2 w-120">
+    <main class="flex flex-col gap-2 w-full">
       <div class="flex gap-2">
         <div class="relative w-full items-center">
           <TagsInput
