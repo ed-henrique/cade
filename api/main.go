@@ -80,6 +80,7 @@ type acesso struct {
 }
 
 func handleErr(w http.ResponseWriter, msg string, code int, err error) {
+	w.Header().Set("content-type", "text/plain")
 	slog.Error(msg, slog.String("err", err.Error()))
 	http.Error(w, msg, code)
 }

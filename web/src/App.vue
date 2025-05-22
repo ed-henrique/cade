@@ -60,7 +60,7 @@ watch(buscaObjetos, async (novoBuscaObjetos) => {
     const res = await fetch(apiCorreios, {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
+        Accept: 'text/plain, application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -69,7 +69,7 @@ watch(buscaObjetos, async (novoBuscaObjetos) => {
     })
 
     if (!res.ok) {
-      const mensagemErro: string = await res.json()
+      const mensagemErro: string = await res.text()
       throw new Error(mensagemErro)
     }
 
