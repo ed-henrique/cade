@@ -130,7 +130,7 @@ func createAndExecuteRequest(endpoint string, w http.ResponseWriter, r io.Reader
 	defer res.Body.Close()
 
 	if err := json.NewDecoder(res.Body).Decode(obj); err != nil {
-		handleErr(w, "the json could not be decoded", "Algum dos códigos enviados estava errado.", http.StatusBadRequest, err)
+		handleErr(w, "could not decode json", "Algum dos códigos enviados estava errado.", http.StatusBadRequest, err)
 		return err
 	}
 

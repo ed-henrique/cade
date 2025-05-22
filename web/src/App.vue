@@ -81,7 +81,11 @@ watch(buscaObjetos, async (novoBuscaObjetos) => {
     mensagemErro.value = ''
   } catch (err) {
     if (err instanceof Error) {
-      mensagemErro.value = err.message
+      if (err.name == 'NetworkError') {
+        mensagemErro.value = 'A conexão com o servidor está instável. Tente novamente mais tarde.'
+      } else {
+        mensagemErro.value = err.message
+      }
     } else {
       mensagemErro.value =
         'O código de rastreamento está errado ou houve um erro no servidor. Tente novamente.'
