@@ -101,16 +101,20 @@ func (t TimeWithoutTimezone) Format(s string) string {
 	return tt.Format(s)
 }
 
-func handleErr(w http.ResponseWriter, msg string, code int, err error) {
+func handleErr(w http.ResponseWriter, serverMsg, clientMsg string, code int, err error) {
 	w.Header().Set("content-type", "text/plain")
-	slog.Error(msg, slog.String("err", err.Error()))
-	http.Error(w, msg, code)
+	slog.Error(serverMsg, slog.String("err", err.Error()))
+	http.Error(w, clientMsg, code)
+}
+
+func HandleServerErr(w http.ResponseWriter, serverMsg string, code int, err error) {
+	handleErr(w, serverMsg, "Houve um erro no servidor.", code, err)
 }
 
 func createAndExecuteRequest(endpoint string, w http.ResponseWriter, r io.Reader, obj any) error {
 	req, err := http.NewRequest(http.MethodPost, endpoint, r)
 	if err != nil {
-		handleErr(w, "could not create new request to Correios", http.StatusInternalServerError, err)
+		HandleServerErr(w, "could not create new request to Correios", http.StatusInternalServerError, err)
 		return err
 	}
 
@@ -120,13 +124,13 @@ func createAndExecuteRequest(endpoint string, w http.ResponseWriter, r io.Reader
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		handleErr(w, "could not generate access token", http.StatusBadRequest, err)
+		HandleServerErr(w, "could not generate access token", http.StatusInternalServerError, err)
 		return err
 	}
 	defer res.Body.Close()
 
 	if err := json.NewDecoder(res.Body).Decode(obj); err != nil {
-		handleErr(w, "could not decode json", http.StatusBadRequest, err)
+		handleErr(w, "the json could not be decoded", "Algum dos códigos enviados estava errado.", http.StatusBadRequest, err)
 		return err
 	}
 
@@ -155,11 +159,11 @@ func main() {
 
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&objetosRastreamento); err != nil {
-			handleErr(w, "could not decode json", http.StatusBadRequest, err)
+			handleErr(w, "could not decode json", "Algum dos códigos enviados estava errado.", http.StatusBadRequest, err)
 			return
 		}
 
-		if time.Now().After(acessoAtual.ExpiraEm) {
+		if time.Now().After(time.Time(acessoAtual.ExpiraEm)) {
 			if err := createAndExecuteRequest(apiCorreiosAutenticacao, w, nil, &acessoAtual); err != nil {
 				return
 			}
@@ -167,17 +171,17 @@ func main() {
 
 		var buffer bytes.Buffer
 		if err := json.NewEncoder(&buffer).Encode(objetosRastreamento); err != nil {
-			handleErr(w, "could not encode json", http.StatusInternalServerError, err)
+			HandleServerErr(w, "could not encode json", http.StatusInternalServerError, err)
 			return
 		}
 
 		objs := make([]objeto, len(objetosRastreamento.Objetos))
-		if err := createAndExecuteRequest(apiCorreiosAutenticacao, w, nil, &objs); err != nil {
+		if err := createAndExecuteRequest(apiCorreiosRastreamento, w, nil, &objs); err != nil {
 			return
 		}
 
 		if _, err := io.Copy(w, &buffer); err != nil {
-			handleErr(w, "could not send full response", http.StatusBadRequest, err)
+			HandleServerErr(w, "could not send full response", http.StatusInternalServerError, err)
 			return
 		}
 	})
