@@ -113,16 +113,22 @@ func createAndExecuteRequest(endpoint string, w http.ResponseWriter, r io.Reader
 func main() {
 	var acessoAtual acesso
 
-	http.HandleFunc("OPTIONS /api/rastreamento", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("OPTIONS /rastreamento", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("access-control-allow-origin", urlBase)
 		w.Header().Add("access-control-allow-methods", strings.Join([]string{http.MethodPost, http.MethodOptions}, ", "))
 		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
 	})
 
-	http.HandleFunc("POST /api/rastreamento", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("POST /rastreamento", func(w http.ResponseWriter, r *http.Request) {
 		objetosRastreamento := struct {
 			Objetos []string `json:"objetos"`
 		}{}
+
+		w.Header().Add("content-type", "application/json")
+		w.Header().Add("access-control-allow-origin", urlBase)
+		w.Header().Add("access-control-allow-methods", strings.Join([]string{http.MethodPost, http.MethodOptions}, ", "))
+		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
+		w.Header().Add("vary", "Origin")
 
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(&objetosRastreamento); err != nil {
@@ -146,12 +152,6 @@ func main() {
 		if err := createAndExecuteRequest(apiCorreiosAutenticacao, w, nil, &objs); err != nil {
 			return
 		}
-
-		w.Header().Add("content-type", "application/json")
-		w.Header().Add("access-control-allow-origin", urlBase)
-		w.Header().Add("access-control-allow-methods", strings.Join([]string{http.MethodPost, http.MethodOptions}, ", "))
-		w.Header().Add("access-control-allow-headers", "Authorization, Accept, Content-Type")
-		w.Header().Add("vary", "Origin")
 
 		if _, err := io.Copy(w, &buffer); err != nil {
 			handleErr(w, "could not send full response", http.StatusBadRequest, err)
